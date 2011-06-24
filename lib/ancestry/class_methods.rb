@@ -145,7 +145,8 @@ module Ancestry
     def build_ancestry_from_parent_ids! parent_id = nil, ancestry = nil
       self.base_class.find_each(:conditions => {:parent_id => parent_id}) do |node|
         node.without_ancestry_callbacks do
-          node.update_attribute ancestry_column, ancestry
+          node.write_attribute(ancestry_column, ancestry)
+          node.save!(false)
         end
         build_ancestry_from_parent_ids! node.id, if ancestry.nil? then "#{node.id}" else "#{ancestry}/#{node.id}" end
       end
