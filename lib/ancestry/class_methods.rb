@@ -142,13 +142,12 @@ module Ancestry
     end
     
     # Build ancestry from parent id's for migration purposes
-    def build_ancestry_from_parent_ids! parent_id = nil, ancestry = nil
-      self.base_class.find_each(:conditions => {:parent_id => parent_id}) do |node|
+    def build_ancestry_from_parent_ids! parent_id = nil, ancestry_value = nil
+      self.base_class.all(:conditions => {:parent_id => parent_id}).each do |node|
         node.without_ancestry_callbacks do
-          node.write_attribute(ancestry_column, ancestry)
-          node.save!
+          node.update_attribute ancestry_column, ancestry_value
         end
-        build_ancestry_from_parent_ids! node.id, if ancestry.nil? then "#{node.id}" else "#{ancestry}/#{node.id}" end
+        self.base_class.build_ancestry_from_parent_ids! node.id, (ancestry_value.nil? ? "#{node.id}" : "#{ancestry_value}/#{node.id}")
       end
     end
     
